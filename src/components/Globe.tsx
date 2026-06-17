@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { CAT_LOCATIONS, type CatLocation, type CatLocationCategory } from '../data/catLocations';
 
 type GeoJsonPosition = [number, number];
 
@@ -22,8 +23,28 @@ type GlobeProps = {
   dataUrl: string;
 };
 
+type MarkerPalette = {
+  fillColor: string;
+  glowColor: string;
+};
+
 const GLOBE_RADIUS = 1.7;
 const COUNTRY_LINE_COLOR = 0x4d4ab3;
+
+const MARKER_PALETTES: Record<CatLocationCategory, MarkerPalette> = {
+  real: {
+    fillColor: '#8fc2ff',
+    glowColor: 'rgba(120, 183, 255, 1)'
+  },
+  fictional: {
+    fillColor: '#ff8fd1',
+    glowColor: 'rgba(255, 120, 205, 1)'
+  },
+  breed: {
+    fillColor: '#7ff5d7',
+    glowColor: 'rgba(77, 245, 210, 1)'
+  }
+};
 
 const countryCodeKeys = ['A3', 'ISO_A3', 'iso_a3', 'ISO3', 'iso3', 'adm0_a3', 'ADM0_A3'];
 
@@ -240,6 +261,99 @@ function createTextSprite(text: string) {
   sprite.userData.baseScale = sprite.scale.clone();
 
   return sprite;
+}
+
+function createStyledMarkerTexture(
+  image: CanvasImageSource,
+  fillColor: string,
+  glowColor: string
+) {
+  const imageWidth = 'width' in image && typeof image.width === 'number' ? image.width : 512;
+  const imageHeight = 'height' in image && typeof image.height === 'number' ? image.height : 512;
+  const padding = Math.ceil(Math.max(imageWidth, imageHeight) * 0.18);
+
+  const tintedCanvas = document.createElement('canvas');
+  tintedCanvas.width = imageWidth;
+  tintedCanvas.height = imageHeight;
+
+  const tintedContext = tintedCanvas.getContext('2d');
+  if (!tintedContext) {
+    return null;
+  }
+
+  tintedContext.drawImage(image, 0, 0, imageWidth, imageHeight);
+  tintedContext.globalCompositeOperation = 'source-in';
+  tintedContext.fillStyle = fillColor;
+  tintedContext.fillRect(0, 0, imageWidth, imageHeight);
+
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = imageWidth + padding * 2;
+  finalCanvas.height = imageHeight + padding * 2;
+
+  const finalContext = finalCanvas.getContext('2d');
+  if (!finalContext) {
+    return null;
+  }
+
+  finalContext.shadowColor = glowColor;
+  finalContext.shadowBlur = Math.max(imageWidth, imageHeight) * 0.08;
+  finalContext.drawImage(tintedCanvas, padding, padding, imageWidth, imageHeight);
+  finalContext.shadowColor = 'transparent';
+  finalContext.shadowBlur = 0;
+  finalContext.drawImage(tintedCanvas, padding, padding, imageWidth, imageHeight);
+
+  const texture = new THREE.CanvasTexture(finalCanvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  return texture;
+}
+
+function buildLocationMarkers(locations: CatLocation[]) {
+  const group = new THREE.Group();
+  const textureLoader = new THREE.TextureLoader();
+  const markerHeight = 0.16;
+
+  for (const location of locations) {
+    const palette = MARKER_PALETTES[location.category];
+    const iconSprite = new THREE.Sprite();
+    const markerPosition = toVector3(
+      [location.longitude, location.latitude],
+      GLOBE_RADIUS + 0.12
+    );
+    iconSprite.position.copy(markerPosition);
+    iconSprite.center.set(0.5, 0);
+    iconSprite.scale.set(markerHeight, markerHeight, 1);
+    group.add(iconSprite);
+
+    const iconMaterial = new THREE.SpriteMaterial({
+      transparent: true,
+      depthWrite: false,
+      depthTest: true
+    });
+    iconSprite.material = iconMaterial;
+
+    textureLoader.load(location.iconUrl, (loadedTexture) => {
+      const loadedImage = loadedTexture.image as { width?: number; height?: number } | undefined;
+      const width = loadedImage?.width ?? 1;
+      const height = loadedImage?.height ?? 1;
+      const aspectRatio = width / height;
+      const styledTexture = createStyledMarkerTexture(
+        loadedTexture.image as CanvasImageSource,
+        palette.fillColor,
+        palette.glowColor
+      );
+
+      iconSprite.scale.set(markerHeight * aspectRatio, markerHeight, 1);
+      if (styledTexture) {
+        iconMaterial.map = styledTexture;
+        iconMaterial.needsUpdate = true;
+      }
+
+      loadedTexture.dispose();
+    });
+  }
+
+  return group;
 }
 
 function buildCountryLabels(featureCollection: GeoJsonFeatureCollection) {
@@ -524,6 +638,8 @@ export function Globe({ dataUrl }: GlobeProps) {
     return buildCountryLabels(featureCollection);
   }, [featureCollection]);
 
+  const locationMarkers = useMemo(() => buildLocationMarkers(CAT_LOCATIONS), []);
+
   // Dispose old geometries when data changes
   useEffect(() => {
     return () => {
@@ -552,8 +668,17 @@ export function Globe({ dataUrl }: GlobeProps) {
           }
         });
       }
+      locationMarkers.traverse((object) => {
+        if (object instanceof THREE.Sprite) {
+          object.geometry?.dispose();
+          if (object.material instanceof THREE.SpriteMaterial) {
+            object.material.map?.dispose();
+            object.material.dispose();
+          }
+        }
+      });
     };
-  }, [countryMeshes, countryLabels]);
+  }, [countryMeshes, countryLabels, locationMarkers]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -623,6 +748,8 @@ export function Globe({ dataUrl }: GlobeProps) {
       globeGroup.add(countryLabels);
     }
 
+    globeGroup.add(locationMarkers);
+
     const labelSprites: THREE.Sprite[] = [];
     if (countryLabels) {
       countryLabels.traverse((object) => {
@@ -691,7 +818,7 @@ export function Globe({ dataUrl }: GlobeProps) {
       scene.clear();
       renderer.dispose();
     };
-  }, [countryMeshes, countryLabels]);
+  }, [countryMeshes, countryLabels, locationMarkers]);
 
   return <div ref={mountRef} className="globe-canvas" aria-label="3D globe" />;
 }
