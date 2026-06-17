@@ -21,6 +21,7 @@ type GeoJsonFeatureCollection = {
 
 type GlobeProps = {
   dataUrl: string;
+  onMarkerSelect?: (location: CatLocation | null) => void;
 };
 
 type MarkerPalette = {
@@ -323,6 +324,7 @@ function buildLocationMarkers(locations: CatLocation[]) {
     iconSprite.position.copy(markerPosition);
     iconSprite.center.set(0.5, 0);
     iconSprite.scale.set(markerHeight, markerHeight, 1);
+    iconSprite.userData.location = location;
     group.add(iconSprite);
 
     const iconMaterial = new THREE.SpriteMaterial({
@@ -591,7 +593,7 @@ function createStarField() {
   );
 }
 
-export function Globe({ dataUrl }: GlobeProps) {
+export function Globe({ dataUrl, onMarkerSelect }: GlobeProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [featureCollection, setFeatureCollection] = useState<GeoJsonFeatureCollection | null>(null);
 
@@ -750,6 +752,36 @@ export function Globe({ dataUrl }: GlobeProps) {
 
     globeGroup.add(locationMarkers);
 
+    const markerSprites: THREE.Sprite[] = [];
+    locationMarkers.traverse((object) => {
+      if (object instanceof THREE.Sprite) {
+        markerSprites.push(object);
+      }
+    });
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    const handleMarkerClick = (event: PointerEvent) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const intersections = raycaster.intersectObjects(markerSprites, false);
+      const firstMatch = intersections[0]?.object as THREE.Sprite | undefined;
+      const location = firstMatch?.userData.location as CatLocation | undefined;
+
+      if (location) {
+        onMarkerSelect?.(location);
+        return;
+      }
+
+      onMarkerSelect?.(null);
+    };
+
+    renderer.domElement.addEventListener('pointerdown', handleMarkerClick);
+
     const labelSprites: THREE.Sprite[] = [];
     if (countryLabels) {
       countryLabels.traverse((object) => {
@@ -814,11 +846,12 @@ export function Globe({ dataUrl }: GlobeProps) {
       observer.disconnect();
       window.cancelAnimationFrame(frameId);
       controls.dispose();
+      renderer.domElement.removeEventListener('pointerdown', handleMarkerClick);
       mount.removeChild(renderer.domElement);
       scene.clear();
       renderer.dispose();
     };
-  }, [countryMeshes, countryLabels, locationMarkers]);
+  }, [countryMeshes, countryLabels, locationMarkers, onMarkerSelect]);
 
   return <div ref={mountRef} className="globe-canvas" aria-label="3D globe" />;
 }
