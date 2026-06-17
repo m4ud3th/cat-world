@@ -761,6 +761,20 @@ export function Globe({ dataUrl, onMarkerSelect }: GlobeProps) {
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
+    const markerWorldPosition = new THREE.Vector3();
+    const globeWorldCenter = new THREE.Vector3();
+    const markerNormal = new THREE.Vector3();
+    const cameraDirection = new THREE.Vector3();
+
+    const isMarkerVisibleFromCamera = (marker: THREE.Sprite) => {
+      marker.getWorldPosition(markerWorldPosition);
+      globeGroup.getWorldPosition(globeWorldCenter);
+
+      markerNormal.copy(markerWorldPosition).sub(globeWorldCenter).normalize();
+      cameraDirection.copy(camera.position).sub(globeWorldCenter).normalize();
+
+      return markerNormal.dot(cameraDirection) > 0;
+    };
 
     const handleMarkerClick = (event: PointerEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
@@ -769,7 +783,14 @@ export function Globe({ dataUrl, onMarkerSelect }: GlobeProps) {
 
       raycaster.setFromCamera(pointer, camera);
       const intersections = raycaster.intersectObjects(markerSprites, false);
-      const firstMatch = intersections[0]?.object as THREE.Sprite | undefined;
+      const firstVisibleMatch = intersections.find(({ object }) => {
+        if (!(object instanceof THREE.Sprite)) {
+          return false;
+        }
+
+        return isMarkerVisibleFromCamera(object);
+      });
+      const firstMatch = firstVisibleMatch?.object as THREE.Sprite | undefined;
       const location = firstMatch?.userData.location as CatLocation | undefined;
 
       if (location) {
