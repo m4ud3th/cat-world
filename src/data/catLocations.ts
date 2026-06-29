@@ -14,6 +14,7 @@ export type AssociatedReference = {
 
 export type RealCatInfo = {
   origin: string;
+  story: string;
   backstoryBiography: string;
   timeline: TimelineEntry[];
   associatedHumansAccounts: AssociatedReference[];
@@ -21,6 +22,7 @@ export type RealCatInfo = {
 
 export type FictionalCatInfo = {
   originSource: string;
+  story: string;
   universeFranchiseCreator: string;
   roleInStory: string;
   personalityTraits: string[];
@@ -78,6 +80,8 @@ export const CAT_LOCATIONS: CatLocation[] = [
     category: 'real',
     info: {
       origin: 'Arizona, United States',
+      story:
+        "Born in Arizona in April 2012, Tardar Sauce shot to fame when her owner's brother posted a photo to Reddit. Her permanently displeased expression — caused by feline dwarfism and an underbite — sparked a global meme phenomenon, a licensing empire, and even a feature film. She passed away in May 2019, leaving behind one of the internet's most recognisable faces.",
       backstoryBiography:
         'Grumpy Cat (Tardar Sauce) became an internet sensation because of her distinctive facial expression linked to feline dwarfism and an underbite.',
       timeline: [
@@ -104,6 +108,8 @@ export const CAT_LOCATIONS: CatLocation[] = [
     category: 'real',
     info: {
       origin: 'Japan',
+      story:
+        "Uni is a serene, fluffy cat from Japan whose photogenic calm made her a quiet favourite in online cat communities. Her owner-managed account drew steady engagement through candid photos and short clips, and fan reposts spread her image well beyond Japan's borders. She remains a recurring fixture in cat-appreciation corners of the internet.",
       backstoryBiography:
         'Uni is a real cat from Japan known for a calm expression and fluffy look that became popular in online cat communities and photo accounts.',
       timeline: [
@@ -127,6 +133,8 @@ export const CAT_LOCATIONS: CatLocation[] = [
     category: 'fictional',
     info: {
       originSource: 'Comic strip',
+      story:
+        'Created by Jim Davis and first syndicated in 1978, Garfield is a cynical, lasagna-obsessed orange tabby who shares a house with his hapless owner Jon Arbuckle and the eager dog Odie. His deadpan hatred of Mondays and bottomless appetite for food made him one of the most widely read comic-strip characters in history, appearing in newspapers across more than 80 countries.',
       universeFranchiseCreator: 'Garfield universe by Jim Davis',
       roleInStory: 'Main character',
       personalityTraits: ['Sarcastic', 'Lazy', 'Food-motivated'],
@@ -147,6 +155,8 @@ export const CAT_LOCATIONS: CatLocation[] = [
     category: 'fictional',
     info: {
       originSource: 'Character brand / media franchise',
+      story:
+        'Designed in 1974 by Yuko Shimizu for the Japanese company Sanrio, Hello Kitty debuted on a small vinyl coin purse. Her simple white face, signature bow, and deliberately expressionless look gave her a universal appeal that grew into a multi-billion-dollar global franchise spanning fashion, theme parks, and cross-media collaborations — one of the most recognised characters ever created.',
       universeFranchiseCreator: 'Sanrio, created by Yuko Shimizu',
       roleInStory: 'Mascot and central character',
       personalityTraits: ['Friendly', 'Kind', 'Cheerful'],
@@ -167,6 +177,8 @@ export const CAT_LOCATIONS: CatLocation[] = [
     category: 'fictional',
     info: {
       originSource: 'Animated short film series',
+      story:
+        "Tom made his debut in the 1940 MGM short Puss Gets the Boot, created by William Hanna and Joseph Barbera. In nearly every episode he pursues the clever mouse Jerry through a series of elaborate, physics-defying slapstick set-pieces — and almost never wins. His expressive suffering and determined restarts turned him into one of animation's most beloved comic foils.",
       universeFranchiseCreator: 'Tom and Jerry by William Hanna and Joseph Barbera',
       roleInStory: 'Main protagonist/antagonist depending on episode',
       personalityTraits: ['Determined', 'Competitive', 'Expressive'],
@@ -187,6 +199,8 @@ export const CAT_LOCATIONS: CatLocation[] = [
     category: 'fictional',
     info: {
       originSource: 'Animated film',
+      story:
+        'Puss in Boots first appeared in Shrek 2 (2004) as a suave hired assassin who weaponises an irresistibly adorable gaze. He quickly stole every scene he entered and earned two standalone DreamWorks films of his own. A master swordsman with a flair for the dramatic, he blends the swagger of a fairy-tale hero with the disarming charm of a very small cat in very big boots.',
       universeFranchiseCreator: 'Shrek universe by DreamWorks Animation',
       roleInStory: 'Heroic side character turned lead',
       personalityTraits: ['Confident', 'Dramatic', 'Charismatic'],
@@ -207,6 +221,8 @@ export const CAT_LOCATIONS: CatLocation[] = [
     category: 'fictional',
     info: {
       originSource: 'Web comic and digital stickers',
+      story:
+        "Pusheen started life in 2010 as a chubby grey tabby in the Everyday Cute web comic by Claire Belton and Andrew Duff. She rose to worldwide fame as a digital sticker pack, becoming a staple of messaging apps everywhere. Whether baking, gaming, or simply napping, Pusheen's illustrated adventures perfectly capture the cosy, snack-loving contentment of the ideal internet cat.",
       universeFranchiseCreator: 'Pusheen by Claire Belton and Andrew Duff',
       roleInStory: 'Main character and mascot',
       personalityTraits: ['Playful', 'Cozy', 'Food-loving'],

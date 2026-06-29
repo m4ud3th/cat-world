@@ -14,8 +14,7 @@ export function CatInfoPopup({ location, onClose }: CatInfoPopupProps) {
     location.category === 'real'
       ? [
           { label: 'Type', value: 'Real famous cat' },
-          { label: 'Origin', value: location.info.origin },
-          { label: 'Known for', value: location.info.backstoryBiography }
+          { label: 'Origin', value: location.info.origin }
         ]
       : location.category === 'fictional'
       ? [
@@ -35,7 +34,12 @@ export function CatInfoPopup({ location, onClose }: CatInfoPopupProps) {
         ];
 
   return (
-    <aside className="cat-popup" role="dialog" aria-modal="false" aria-label={`${location.name} info`}>
+    <aside
+      className={`cat-popup cat-popup-${location.category}`}
+      role="dialog"
+      aria-modal="false"
+      aria-label={`${location.name} info`}
+    >
       <header className="cat-popup-header">
         <div>
           <p className="cat-popup-category">{location.category}</p>
@@ -67,6 +71,9 @@ export function CatInfoPopup({ location, onClose }: CatInfoPopupProps) {
               </li>
             ))}
           </ul>
+          {location.category !== 'breed' ? (
+            <p className="cat-popup-story">{location.info.story}</p>
+          ) : null}
         </section>
       </div>
 

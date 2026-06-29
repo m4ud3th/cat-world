@@ -22,6 +22,7 @@ type GeoJsonFeatureCollection = {
 type GlobeProps = {
   dataUrl: string;
   onMarkerSelect?: (location: CatLocation | null) => void;
+  isLocked?: boolean;
 };
 
 type MarkerPalette = {
@@ -593,9 +594,16 @@ function createStarField() {
   );
 }
 
-export function Globe({ dataUrl, onMarkerSelect }: GlobeProps) {
+export function Globe({ dataUrl, onMarkerSelect, isLocked = false }: GlobeProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const onMarkerSelectRef = useRef<typeof onMarkerSelect>(onMarkerSelect);
   const [featureCollection, setFeatureCollection] = useState<GeoJsonFeatureCollection | null>(null);
+
+  useEffect(() => {
+    onMarkerSelectRef.current = onMarkerSelect;
+  }, [onMarkerSelect]);
 
   useEffect(() => {
     let alive = true;
@@ -683,6 +691,19 @@ export function Globe({ dataUrl, onMarkerSelect }: GlobeProps) {
   }, [countryMeshes, countryLabels, locationMarkers]);
 
   useEffect(() => {
+    const controls = controlsRef.current;
+    const canvas = canvasRef.current;
+
+    if (controls) {
+      controls.enabled = !isLocked;
+    }
+
+    if (canvas) {
+      canvas.style.pointerEvents = isLocked ? 'none' : 'auto';
+    }
+  }, [isLocked]);
+
+  useEffect(() => {
     const mount = mountRef.current;
 
     if (!mount) {
@@ -706,12 +727,16 @@ export function Globe({ dataUrl, onMarkerSelect }: GlobeProps) {
     scene.add(globeGroup);
 
     const controls = new OrbitControls(camera, renderer.domElement);
+    controlsRef.current = controls;
+    canvasRef.current = renderer.domElement;
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.minDistance = 3;
     controls.maxDistance = 15;
     controls.enablePan = false;
     controls.rotateSpeed = 0.5;
+    controls.enabled = !isLocked;
+    renderer.domElement.style.pointerEvents = isLocked ? 'none' : 'auto';
 
     const atmosphere = new THREE.Mesh(
       new THREE.SphereGeometry(GLOBE_RADIUS * 1.06, 32, 32),
@@ -794,11 +819,11 @@ export function Globe({ dataUrl, onMarkerSelect }: GlobeProps) {
       const location = firstMatch?.userData.location as CatLocation | undefined;
 
       if (location) {
-        onMarkerSelect?.(location);
+        onMarkerSelectRef.current?.(location);
         return;
       }
 
-      onMarkerSelect?.(null);
+      onMarkerSelectRef.current?.(null);
     };
 
     renderer.domElement.addEventListener('pointerdown', handleMarkerClick);
@@ -866,13 +891,15 @@ export function Globe({ dataUrl, onMarkerSelect }: GlobeProps) {
     return () => {
       observer.disconnect();
       window.cancelAnimationFrame(frameId);
+      controlsRef.current = null;
+      canvasRef.current = null;
       controls.dispose();
       renderer.domElement.removeEventListener('pointerdown', handleMarkerClick);
       mount.removeChild(renderer.domElement);
       scene.clear();
       renderer.dispose();
     };
-  }, [countryMeshes, countryLabels, locationMarkers, onMarkerSelect]);
+  }, [countryMeshes, countryLabels, locationMarkers]);
 
   return <div ref={mountRef} className="globe-canvas" aria-label="3D globe" />;
 }
