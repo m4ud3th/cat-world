@@ -41,7 +41,7 @@ export default function App() {
   }, [searchQuery]);
 
   const hasQuery = searchQuery.trim().length > 0;
-  const isPopupOpen = selectedLocation !== null || selectedCategory !== null;
+  const isInfoPopupOpen = selectedLocation !== null;
 
   function openLocation(location: CatLocation) {
     setSelectedCategory(null);
@@ -64,16 +64,14 @@ export default function App() {
 
   function applyMarkerFilter(category: CatMenuCategory) {
     if (category === 'all') {
-      setActiveMarkerFilters(MARKER_CATEGORY_ORDER);
+      setActiveMarkerFilters((currentFilters) =>
+        isAllFiltersSelected(currentFilters) ? [] : MARKER_CATEGORY_ORDER
+      );
       return;
     }
 
     setActiveMarkerFilters((currentFilters) => {
       if (currentFilters.includes(category)) {
-        if (currentFilters.length === 1) {
-          return currentFilters;
-        }
-
         return currentFilters.filter((entry) => entry !== category);
       }
 
@@ -197,15 +195,15 @@ export default function App() {
                   <div className="marker-legend-item-row">
                     <button type="button" className="marker-legend-button marker-legend-list-button" onClick={() => openCategory('real')}>
                       <span className="marker-dot marker-dot-real" aria-hidden="true" />
-                      <span>Real cats</span>
+                      <span>Famous cats</span>
                     </button>
                     <button
                       type="button"
                       className={`marker-legend-filter-button${activeMarkerFilters.includes('real') ? ' marker-legend-filter-button-active' : ''}`}
                       onClick={() => applyMarkerFilter('real')}
                       aria-pressed={activeMarkerFilters.includes('real')}
-                      aria-label="Filter globe to real cats"
-                      title="Toggle real cats on globe"
+                      aria-label="Filter globe to famous cats"
+                      title="Toggle famous cats on globe"
                     >
                       {activeMarkerFilters.includes('real') ? '●' : '○'}
                     </button>
@@ -253,11 +251,11 @@ export default function App() {
         </div>
       </div>
 
-      <div className={`globe-frame${isPopupOpen ? ' globe-frame-locked' : ''}`}>
+      <div className={`globe-frame${isInfoPopupOpen ? ' globe-frame-locked' : ''}`}>
         <Globe
           dataUrl="/data/countries-110m.geojson"
           onMarkerSelect={handleMarkerSelect}
-          isLocked={isPopupOpen}
+          isLocked={isInfoPopupOpen}
           markerFilters={activeMarkerFilters}
         />
       </div>
@@ -266,7 +264,11 @@ export default function App() {
         onSelectLocation={openLocationByName}
         onClose={() => setSelectedCategory(null)}
       />
-      <CatInfoPopup location={selectedLocation} onClose={() => setSelectedLocation(null)} />
+      <CatInfoPopup
+        location={selectedLocation}
+        onSelectLocation={openLocationByName}
+        onClose={() => setSelectedLocation(null)}
+      />
     </main>
   );
 }

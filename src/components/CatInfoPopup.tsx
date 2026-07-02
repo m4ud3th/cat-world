@@ -1,24 +1,80 @@
-import { type CatLocation } from '../data/catLocations';
+import { useEffect, useRef } from 'react';
+import { CAT_LOCATIONS, type CatLocation } from '../data/catLocations';
 
 type CatInfoPopupProps = {
   location: CatLocation | null;
+  onSelectLocation: (name: string) => void;
   onClose: () => void;
 };
 
-export function CatInfoPopup({ location, onClose }: CatInfoPopupProps) {
+function categoryLabel(category: CatLocation['category']) {
+  if (category === 'real') {
+    return 'Famous cats';
+  }
+
+  if (category === 'fictional') {
+    return 'Fictional cats';
+  }
+
+  return 'Cat breeds';
+}
+
+export function CatInfoPopup({ location, onSelectLocation, onClose }: CatInfoPopupProps) {
+  const popupRef = useRef<HTMLElement | null>(null);
+  const isOutsideCloseArmedRef = useRef(false);
+
+  useEffect(() => {
+    if (!location) {
+      return;
+    }
+
+    isOutsideCloseArmedRef.current = false;
+    const armTimeout = window.setTimeout(() => {
+      isOutsideCloseArmedRef.current = true;
+    }, 0);
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!isOutsideCloseArmedRef.current) {
+        return;
+      }
+
+      if (!popupRef.current) {
+        return;
+      }
+
+      const target = event.target;
+      if (target instanceof Node && !popupRef.current.contains(target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      window.clearTimeout(armTimeout);
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [location, onClose]);
+
   if (!location) {
     return null;
   }
 
+  const breedNamesOnSite = new Set(
+    CAT_LOCATIONS.filter((entry) => entry.category === 'breed').map((entry) => entry.name)
+  );
+
   const quickFacts =
     location.category === 'real'
       ? [
-          { label: 'Type', value: 'Real famous cat' },
+          { label: 'Type', value: 'Famous cat' },
+          { label: 'Breed', value: location.info.breed },
+          { label: 'City of origin', value: location.cityOfOrigin },
           { label: 'Origin', value: location.info.origin }
         ]
       : location.category === 'fictional'
       ? [
           { label: 'Type', value: 'Fictional cat' },
+          { label: 'City of origin', value: location.cityOfOrigin },
           { label: 'Origin source', value: location.info.originSource },
           { label: 'Role', value: location.info.roleInStory },
           {
@@ -28,6 +84,7 @@ export function CatInfoPopup({ location, onClose }: CatInfoPopupProps) {
         ]
       : [
           { label: 'Type', value: 'Cat breed' },
+          { label: 'City of origin', value: location.cityOfOrigin },
           { label: 'Origin', value: location.info.origin },
           { label: 'Size', value: location.info.physicalCharacteristics.size },
           { label: 'Lifespan', value: location.info.lifespan }
@@ -35,6 +92,7 @@ export function CatInfoPopup({ location, onClose }: CatInfoPopupProps) {
 
   return (
     <aside
+      ref={popupRef}
       className={`cat-popup cat-popup-${location.category}`}
       role="dialog"
       aria-modal="false"
@@ -42,11 +100,11 @@ export function CatInfoPopup({ location, onClose }: CatInfoPopupProps) {
     >
       <header className="cat-popup-header">
         <div>
-          <p className="cat-popup-category">{location.category}</p>
+          <p className="cat-popup-category">{categoryLabel(location.category)}</p>
           <h2 className="cat-popup-title">{location.name}</h2>
         </div>
         <button type="button" className="cat-popup-close" onClick={onClose} aria-label="Close info">
-          Close
+          X
         </button>
       </header>
 
@@ -214,9 +272,25 @@ export function CatInfoPopup({ location, onClose }: CatInfoPopupProps) {
             <section className="cat-popup-section">
               <h3>Similar Breeds</h3>
               <ul>
-                {location.info.similarBreeds.map((breed) => (
-                  <li key={breed}>{breed}</li>
-                ))}
+                {location.info.similarBreeds.map((breed) => {
+                  const canOpenBreedProfile = breedNamesOnSite.has(breed);
+
+                  return (
+                    <li key={breed}>
+                      {canOpenBreedProfile ? (
+                        <button
+                          type="button"
+                          className="cat-popup-inline-link"
+                          onClick={() => onSelectLocation(breed)}
+                        >
+                          {breed}
+                        </button>
+                      ) : (
+                        <span>{breed}</span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           ) : null}

@@ -14,6 +14,7 @@ export type AssociatedReference = {
 };
 
 export type RealCatInfo = {
+  breed: string;
   origin: string;
   story: string;
   backstoryBiography: string;
@@ -58,6 +59,7 @@ export type BreedCatInfo = {
 
 type CatLocationBase = {
   name: string;
+  cityOfOrigin: string;
   latitude: number;
   longitude: number;
   iconUrl: string;
@@ -73,6 +75,7 @@ export type CatLocation =
 export const CAT_LOCATIONS: CatLocation[] = [
   {
     name: 'Grumpy Cat',
+    cityOfOrigin: 'Morristown',
     latitude: 32.95,
     longitude: -110.97,
     iconUrl: '/imgs/meowrker.png',
@@ -80,6 +83,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
     imageAlt: 'Grumpy Cat',
     category: 'real',
     info: {
+      breed: 'Mixed breed (domestic shorthair)',
       origin: 'Arizona, United States',
       story:
         "Born in Arizona in April 2012, Tardar Sauce shot to fame when her owner's brother posted a photo to Reddit. Her permanently displeased expression — caused by feline dwarfism and an underbite — sparked a global meme phenomenon, a licensing empire, and even a feature film. She passed away in May 2019, leaving behind one of the internet's most recognisable faces.",
@@ -93,14 +97,25 @@ export const CAT_LOCATIONS: CatLocation[] = [
       ],
       associatedHumansAccounts: [
         { label: 'Tabatha Bundesen', kind: 'owner' },
-        { label: 'Instagram', kind: 'social', handle: '@realgrumpycat' },
-        { label: 'X', kind: 'social', handle: '@RealGrumpyCat' },
+        {
+          label: 'Instagram',
+          kind: 'social',
+          handle: '@realgrumpycat',
+          url: 'https://www.instagram.com/realgrumpycat/'
+        },
+        {
+          label: 'X',
+          kind: 'social',
+          handle: '@RealGrumpyCat',
+          url: 'https://x.com/RealGrumpyCat'
+        },
         { label: 'Grumpy Cat Limited', kind: 'organization' }
       ]
     }
   },
   {
     name: 'Uni',
+    cityOfOrigin: 'Nagano',
     latitude: 36.2,
     longitude: 138.25,
     iconUrl: '/imgs/meowrker.png',
@@ -108,6 +123,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
     imageAlt: 'Uni cat',
     category: 'real',
     info: {
+      breed: 'Longhair domestic cat',
       origin: 'Japan',
       story:
         "Uni is a serene, fluffy cat from Japan whose photogenic calm made her a quiet favourite in online cat communities. Her owner-managed account drew steady engagement through candid photos and short clips, and fan reposts spread her image well beyond Japan's borders. She remains a recurring fixture in cat-appreciation corners of the internet.",
@@ -120,12 +136,18 @@ export const CAT_LOCATIONS: CatLocation[] = [
       ],
       associatedHumansAccounts: [
         { label: 'Owner-managed account', kind: 'owner' },
-        { label: 'Instagram fan reposts', kind: 'social' }
+        {
+          label: 'Instagram',
+          kind: 'social',
+          handle: '@unico_uniuni',
+          url: 'https://www.instagram.com/unico_uniuni/'
+        }
       ]
     }
   },
   {
     name: 'Garfield',
+    cityOfOrigin: 'Muncie',
     latitude: 39.9,
     longitude: -86.28,
     iconUrl: '/imgs/meowrker.png',
@@ -148,6 +170,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
   },
   {
     name: 'Hello Kitty',
+    cityOfOrigin: 'Tokyo',
     latitude: 35.6764,
     longitude: 139.65,
     iconUrl: '/imgs/meowrker.png',
@@ -170,6 +193,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
   },
   {
     name: 'Tom',
+    cityOfOrigin: 'Los Angeles',
     latitude: 34.0522,
     longitude: -118.2437,
     iconUrl: '/imgs/meowrker.png',
@@ -192,6 +216,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
   },
   {
     name: 'Puss in Boots',
+    cityOfOrigin: 'Rome',
     latitude: 41.9028,
     longitude: 12.4964,
     iconUrl: '/imgs/meowrker.png',
@@ -214,6 +239,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
   },
   {
     name: 'Pusheen',
+    cityOfOrigin: 'Chicago',
     latitude: 41.8781,
     longitude: -87.6298,
     iconUrl: '/imgs/meowrker.png',
@@ -236,6 +262,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
   },
   {
     name: 'Siamese',
+    cityOfOrigin: 'Bangkok',
     latitude: 13.7563,
     longitude: 100.5018,
     iconUrl: '/imgs/meowrker.png',
@@ -263,6 +290,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
   },
   {
     name: 'Persian',
+    cityOfOrigin: 'Tehran',
     latitude: 35.6892,
     longitude: 51.389,
     iconUrl: '/imgs/meowrker.png',
@@ -290,6 +318,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
   },
   {
     name: 'Maine Coon',
+    cityOfOrigin: 'Portland',
     latitude: 43.6591,
     longitude: -70.2568,
     iconUrl: '/imgs/meowrker.png',
@@ -317,6 +346,7 @@ export const CAT_LOCATIONS: CatLocation[] = [
   },
   {
     name: 'Norwegian Forest',
+    cityOfOrigin: 'Oslo',
     latitude: 59.9139,
     longitude: 10.7522,
     iconUrl: '/imgs/meowrker.png',

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CAT_LOCATIONS, type CatMenuCategory } from '../data/catLocations';
 
 type AllCatsSortMode = 'alphabetical' | 'category';
@@ -15,7 +15,7 @@ function categoryTitle(category: CatMenuCategory) {
   }
 
   if (category === 'real') {
-    return 'Real Cats';
+    return 'Famous Cats';
   }
 
   if (category === 'fictional') {
@@ -27,6 +27,40 @@ function categoryTitle(category: CatMenuCategory) {
 
 export function CategoryPopup({ category, onSelectLocation, onClose }: CategoryPopupProps) {
   const [allCatsSortMode, setAllCatsSortMode] = useState<AllCatsSortMode>('alphabetical');
+  const popupRef = useRef<HTMLElement | null>(null);
+  const isOutsideCloseArmedRef = useRef(false);
+
+  useEffect(() => {
+    if (!category) {
+      return;
+    }
+
+    isOutsideCloseArmedRef.current = false;
+    const armTimeout = window.setTimeout(() => {
+      isOutsideCloseArmedRef.current = true;
+    }, 0);
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!isOutsideCloseArmedRef.current) {
+        return;
+      }
+
+      if (!popupRef.current) {
+        return;
+      }
+
+      const target = event.target;
+      if (target instanceof Node && !popupRef.current.contains(target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      window.clearTimeout(armTimeout);
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [category, onClose]);
 
   const locations = useMemo(() => {
     if (!category) {
@@ -68,6 +102,7 @@ export function CategoryPopup({ category, onSelectLocation, onClose }: CategoryP
 
   return (
     <aside
+      ref={popupRef}
       className={`cat-popup category-popup cat-popup-${category}`}
       role="dialog"
       aria-modal="false"
@@ -79,7 +114,7 @@ export function CategoryPopup({ category, onSelectLocation, onClose }: CategoryP
           <h2 className="cat-popup-title">{categoryTitle(category)}</h2>
         </div>
         <button type="button" className="cat-popup-close" onClick={onClose} aria-label="Close category list">
-          Close
+          X
         </button>
       </header>
 

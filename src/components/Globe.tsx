@@ -650,8 +650,12 @@ export function Globe({ dataUrl, onMarkerSelect, isLocked = false, markerFilters
   }, [featureCollection]);
 
   const filteredLocations = useMemo(() => {
-    if (!markerFilters || markerFilters.length === 0) {
+    if (!markerFilters) {
       return CAT_LOCATIONS;
+    }
+
+    if (markerFilters.length === 0) {
+      return [];
     }
 
     const activeFilterSet = new Set(markerFilters);
