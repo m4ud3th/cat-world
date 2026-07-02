@@ -23,6 +23,7 @@ type GlobeProps = {
   dataUrl: string;
   onMarkerSelect?: (location: CatLocation | null) => void;
   isLocked?: boolean;
+  markerFilters?: CatLocationCategory[];
 };
 
 type MarkerPalette = {
@@ -594,7 +595,7 @@ function createStarField() {
   );
 }
 
-export function Globe({ dataUrl, onMarkerSelect, isLocked = false }: GlobeProps) {
+export function Globe({ dataUrl, onMarkerSelect, isLocked = false, markerFilters }: GlobeProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -648,7 +649,16 @@ export function Globe({ dataUrl, onMarkerSelect, isLocked = false }: GlobeProps)
     return buildCountryLabels(featureCollection);
   }, [featureCollection]);
 
-  const locationMarkers = useMemo(() => buildLocationMarkers(CAT_LOCATIONS), []);
+  const filteredLocations = useMemo(() => {
+    if (!markerFilters || markerFilters.length === 0) {
+      return CAT_LOCATIONS;
+    }
+
+    const activeFilterSet = new Set(markerFilters);
+    return CAT_LOCATIONS.filter((location) => activeFilterSet.has(location.category));
+  }, [markerFilters]);
+
+  const locationMarkers = useMemo(() => buildLocationMarkers(filteredLocations), [filteredLocations]);
 
   // Dispose old geometries when data changes
   useEffect(() => {

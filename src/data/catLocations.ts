@@ -1,4 +1,5 @@
 export type CatLocationCategory = 'real' | 'fictional' | 'breed';
+export type CatMenuCategory = CatLocationCategory | 'all';
 
 export type TimelineEntry = {
   date: string;

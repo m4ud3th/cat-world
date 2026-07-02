@@ -1,12 +1,19 @@
-import { CAT_LOCATIONS, type CatLocationCategory } from '../data/catLocations';
+import { useMemo, useState } from 'react';
+import { CAT_LOCATIONS, type CatMenuCategory } from '../data/catLocations';
+
+type AllCatsSortMode = 'alphabetical' | 'category';
 
 type CategoryPopupProps = {
-  category: CatLocationCategory | null;
+  category: CatMenuCategory | null;
   onSelectLocation: (name: string) => void;
   onClose: () => void;
 };
 
-function categoryTitle(category: CatLocationCategory) {
+function categoryTitle(category: CatMenuCategory) {
+  if (category === 'all') {
+    return 'All Cats';
+  }
+
   if (category === 'real') {
     return 'Real Cats';
   }
@@ -19,11 +26,45 @@ function categoryTitle(category: CatLocationCategory) {
 }
 
 export function CategoryPopup({ category, onSelectLocation, onClose }: CategoryPopupProps) {
+  const [allCatsSortMode, setAllCatsSortMode] = useState<AllCatsSortMode>('alphabetical');
+
+  const locations = useMemo(() => {
+    if (!category) {
+      return [];
+    }
+
+    if (category !== 'all') {
+      return CAT_LOCATIONS.filter((location) => location.category === category);
+    }
+
+    const byName = [...CAT_LOCATIONS].sort((first, second) =>
+      first.name.localeCompare(second.name, undefined, { sensitivity: 'base' })
+    );
+
+    if (allCatsSortMode === 'alphabetical') {
+      return byName;
+    }
+
+    const categoryOrder = {
+      real: 0,
+      fictional: 1,
+      breed: 2
+    } as const;
+
+    return [...CAT_LOCATIONS].sort((first, second) => {
+      const categoryDifference = categoryOrder[first.category] - categoryOrder[second.category];
+
+      if (categoryDifference !== 0) {
+        return categoryDifference;
+      }
+
+      return first.name.localeCompare(second.name, undefined, { sensitivity: 'base' });
+    });
+  }, [allCatsSortMode, category]);
+
   if (!category) {
     return null;
   }
-
-  const locations = CAT_LOCATIONS.filter((location) => location.category === category);
 
   return (
     <aside
@@ -43,7 +84,23 @@ export function CategoryPopup({ category, onSelectLocation, onClose }: CategoryP
       </header>
 
       <section className="cat-popup-section" aria-label={`${categoryTitle(category)} entries`}>
-        <h3>Current entries</h3>
+        <div className="category-popup-section-head">
+          <h3>Current entries</h3>
+          {category === 'all' ? (
+            <label className="category-popup-sort" htmlFor="all-cats-sort">
+              <span>Sort</span>
+              <select
+                id="all-cats-sort"
+                className="category-popup-sort-select"
+                value={allCatsSortMode}
+                onChange={(event) => setAllCatsSortMode(event.target.value as AllCatsSortMode)}
+              >
+                <option value="alphabetical">Alphabetical</option>
+                <option value="category">By category</option>
+              </select>
+            </label>
+          ) : null}
+        </div>
         <ul className="category-popup-list">
           {locations.map((location) => (
             <li key={`${location.category}-${location.name}`}>

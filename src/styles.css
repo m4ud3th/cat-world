@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&display=swap');
+
 :root {
-  --top-ui-height: 4.35rem;
+  --top-ui-height: 4.5rem;
   color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background:
@@ -86,24 +88,85 @@ body::before {
   left: 0;
   right: 0;
   z-index: 20;
-  padding: 0.6rem 1rem 0.55rem;
+  padding: 0.7rem 2rem 0.62rem;
   background: linear-gradient(180deg, rgba(6, 17, 38, 0.94), rgba(6, 17, 38, 0.72));
   backdrop-filter: blur(7px);
   border-bottom: 1px solid rgba(175, 194, 255, 0.18);
 }
 
 .top-search-row {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.8rem;
+  margin: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(34rem, 56rem) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+.top-search-logo {
+  margin: 0;
+  font-family: 'DynaPuff', cursive;
+  font-size: clamp(1.7rem, 2.1vw, 2.3rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  background: linear-gradient(90deg, #8fc2ff 0%, #ff8fd1 52%, #7ff5d7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 10px rgba(143, 194, 255, 0.24);
+  justify-self: start;
 }
 
 .top-search-searchbox {
   position: relative;
-  width: min(28rem, 100%);
+  width: 100%;
+  min-width: 34rem;
+  justify-self: stretch;
+}
+
+.top-search-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 0.65rem;
+}
+
+.random-cat-button {
+  width: 2.8rem;
+  height: 2.8rem;
+  flex-shrink: 0;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(190, 205, 255, 0.22);
+  background: linear-gradient(160deg, rgba(8, 20, 43, 0.84), rgba(11, 26, 54, 0.76));
+  color: rgba(236, 242, 255, 0.96);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(4, 8, 20, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.random-cat-button:hover {
+  border-color: rgba(143, 194, 255, 0.46);
+  box-shadow: 0 10px 26px rgba(4, 8, 20, 0.42), 0 0 0.45rem rgba(143, 194, 255, 0.22);
+}
+
+.random-cat-button:active {
+  transform: translateY(1px);
+}
+
+.random-cat-button:focus-visible {
+  outline: 2px solid rgba(143, 194, 255, 0.72);
+  outline-offset: 2px;
+}
+
+.random-cat-button-icon {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 .top-search-label {
@@ -293,6 +356,12 @@ body::before {
   color: rgba(232, 238, 255, 0.92);
 }
 
+.marker-legend-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .marker-legend-button {
   width: 100%;
   border: 0;
@@ -307,8 +376,37 @@ body::before {
   text-align: left;
 }
 
+.marker-legend-list-button {
+  flex: 1;
+}
+
 .marker-legend-button:hover {
   background: rgba(118, 145, 215, 0.16);
+}
+
+.marker-legend-filter-button {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(171, 195, 255, 0.28);
+  background: rgba(12, 26, 53, 0.8);
+  color: rgba(236, 242, 255, 0.96);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+.marker-legend-filter-button:hover {
+  border-color: rgba(143, 194, 255, 0.5);
+  background: rgba(26, 48, 86, 0.84);
+}
+
+.marker-legend-filter-button-active {
+  border-color: rgba(143, 194, 255, 0.66);
+  background: rgba(118, 145, 215, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(143, 194, 255, 0.42);
 }
 
 .marker-dot {
@@ -316,6 +414,11 @@ body::before {
   height: 0.6rem;
   border-radius: 999px;
   flex-shrink: 0;
+}
+
+.marker-dot-all {
+  background: linear-gradient(120deg, #8fc2ff 0%, #ff8fd1 52%, #7ff5d7 100%);
+  box-shadow: 0 0 0.45rem rgba(185, 176, 255, 0.72);
 }
 
 .marker-dot-real {
@@ -560,9 +663,45 @@ body::before {
   font-weight: 600;
 }
 
+.category-popup-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin-bottom: 0.45rem;
+}
+
+.category-popup-section-head h3 {
+  margin: 0;
+}
+
+.category-popup-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(220, 230, 255, 0.9);
+}
+
+.category-popup-sort-select {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(190, 205, 255, 0.26);
+  background: rgba(13, 30, 60, 0.88);
+  color: rgba(236, 242, 255, 0.96);
+  font-size: 0.77rem;
+  padding: 0.22rem 0.42rem;
+}
+
+.category-popup-sort-select:focus {
+  outline: 2px solid rgba(143, 194, 255, 0.54);
+  outline-offset: 1px;
+}
+
 @media (max-width: 900px) {
   :root {
-    --top-ui-height: 4.2rem;
+    --top-ui-height: 4.35rem;
   }
 
   .app-shell {
@@ -579,13 +718,20 @@ body::before {
   }
 
   .top-search-row {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     align-items: stretch;
     gap: 0.5rem;
   }
 
+  .top-search-logo {
+    font-size: 1.3rem;
+    line-height: 1.1;
+  }
+
   .top-search-searchbox {
     width: 100%;
+    min-width: 0;
+    justify-self: stretch;
   }
 
   .top-search-input,
@@ -595,6 +741,10 @@ body::before {
 
   .marker-legend {
     min-width: 10.5rem;
+  }
+
+  .top-search-actions {
+    justify-self: start;
   }
 
   .marker-legend-summary {
