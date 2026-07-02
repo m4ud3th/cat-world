@@ -49,6 +49,18 @@ const MARKER_PALETTES: Record<CatLocationCategory, MarkerPalette> = {
   }
 };
 
+function categoryPreviewLabel(category: CatLocationCategory) {
+  if (category === 'real') {
+    return 'Famous cat';
+  }
+
+  if (category === 'fictional') {
+    return 'Fictional cat';
+  }
+
+  return 'Cat breed';
+}
+
 const countryCodeKeys = ['A3', 'ISO_A3', 'iso_a3', 'ISO3', 'iso3', 'adm0_a3', 'ADM0_A3'];
 
 function generatePastelColor() {
@@ -804,6 +816,55 @@ export function Globe({ dataUrl, onMarkerSelect, isLocked = false, markerFilters
     const globeWorldCenter = new THREE.Vector3();
     const markerNormal = new THREE.Vector3();
     const cameraDirection = new THREE.Vector3();
+    const hoverPointer = { x: 0, y: 0 };
+
+    const hoverTooltip = document.createElement('div');
+    hoverTooltip.style.position = 'fixed';
+    hoverTooltip.style.zIndex = '40';
+    hoverTooltip.style.pointerEvents = 'none';
+    hoverTooltip.style.padding = '0.35rem 0.5rem';
+    hoverTooltip.style.borderRadius = '0.5rem';
+    hoverTooltip.style.border = '1px solid rgba(175, 194, 255, 0.3)';
+    hoverTooltip.style.background = 'rgba(8, 20, 43, 0.94)';
+    hoverTooltip.style.color = 'rgba(236, 242, 255, 0.98)';
+    hoverTooltip.style.font = '600 0.74rem Inter, sans-serif';
+    hoverTooltip.style.letterSpacing = '0.01em';
+    hoverTooltip.style.boxShadow = '0 8px 22px rgba(4, 8, 20, 0.38)';
+    hoverTooltip.style.backdropFilter = 'blur(6px)';
+    hoverTooltip.style.transform = 'translate(-50%, calc(-100% - 10px))';
+    hoverTooltip.style.display = 'none';
+    document.body.appendChild(hoverTooltip);
+
+    let hoverDelayTimeout: number | null = null;
+    let hoverCandidate: THREE.Sprite | null = null;
+
+    const hideHoverPreview = () => {
+      if (hoverDelayTimeout !== null) {
+        window.clearTimeout(hoverDelayTimeout);
+        hoverDelayTimeout = null;
+      }
+
+      hoverCandidate = null;
+      hoverTooltip.style.display = 'none';
+      hoverTooltip.textContent = '';
+    };
+
+    const placeHoverPreview = () => {
+      hoverTooltip.style.left = `${hoverPointer.x}px`;
+      hoverTooltip.style.top = `${hoverPointer.y}px`;
+    };
+
+    const showHoverPreview = (marker: THREE.Sprite) => {
+      const location = marker.userData.location as CatLocation | undefined;
+
+      if (!location) {
+        return;
+      }
+
+        hoverTooltip.textContent = location.name;
+      placeHoverPreview();
+      hoverTooltip.style.display = 'block';
+    };
 
     const isMarkerVisibleFromCamera = (marker: THREE.Sprite) => {
       marker.getWorldPosition(markerWorldPosition);
@@ -840,7 +901,68 @@ export function Globe({ dataUrl, onMarkerSelect, isLocked = false, markerFilters
       onMarkerSelectRef.current?.(null);
     };
 
+    const getFirstVisibleHoveredMarker = (event: PointerEvent) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const intersections = raycaster.intersectObjects(markerSprites, false);
+
+      const firstVisibleMatch = intersections.find(({ object }) => {
+        if (!(object instanceof THREE.Sprite)) {
+          return false;
+        }
+
+        return isMarkerVisibleFromCamera(object);
+      });
+
+      return firstVisibleMatch?.object instanceof THREE.Sprite ? firstVisibleMatch.object : null;
+    };
+
+    const handleMarkerHover = (event: PointerEvent) => {
+      hoverPointer.x = event.clientX;
+      hoverPointer.y = event.clientY;
+
+      if (hoverTooltip.style.display === 'block') {
+        placeHoverPreview();
+      }
+
+      const hoveredMarker = getFirstVisibleHoveredMarker(event);
+
+      if (!hoveredMarker) {
+        hideHoverPreview();
+        return;
+      }
+
+      if (hoverCandidate === hoveredMarker && hoverTooltip.style.display === 'block') {
+        return;
+      }
+
+      if (hoverCandidate === hoveredMarker) {
+        return;
+      }
+
+      if (hoverDelayTimeout !== null) {
+        window.clearTimeout(hoverDelayTimeout);
+      }
+
+      hoverCandidate = hoveredMarker;
+      hoverTooltip.style.display = 'none';
+      hoverDelayTimeout = window.setTimeout(() => {
+        if (hoverCandidate === hoveredMarker) {
+          showHoverPreview(hoveredMarker);
+        }
+      }, 450);
+    };
+
+    const handleMarkerHoverLeave = () => {
+      hideHoverPreview();
+    };
+
     renderer.domElement.addEventListener('pointerdown', handleMarkerClick);
+    renderer.domElement.addEventListener('pointermove', handleMarkerHover);
+    renderer.domElement.addEventListener('pointerleave', handleMarkerHoverLeave);
 
     const labelSprites: THREE.Sprite[] = [];
     if (countryLabels) {
@@ -905,11 +1027,15 @@ export function Globe({ dataUrl, onMarkerSelect, isLocked = false, markerFilters
     return () => {
       observer.disconnect();
       window.cancelAnimationFrame(frameId);
+      hideHoverPreview();
       controlsRef.current = null;
       canvasRef.current = null;
       controls.dispose();
       renderer.domElement.removeEventListener('pointerdown', handleMarkerClick);
+      renderer.domElement.removeEventListener('pointermove', handleMarkerHover);
+      renderer.domElement.removeEventListener('pointerleave', handleMarkerHoverLeave);
       mount.removeChild(renderer.domElement);
+      hoverTooltip.remove();
       scene.clear();
       renderer.dispose();
     };

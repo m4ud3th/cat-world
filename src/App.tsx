@@ -104,7 +104,10 @@ export default function App() {
     <main className="app-shell">
       <div className="top-search" role="search">
         <div className="top-search-row">
-          <h1 className="top-search-logo">ฅ^•ﻌ•^ฅ Cat World</h1>
+          <h1 className="top-search-logo">
+            <span className="top-search-logo-symbols">ฅ^•ﻌ•^ฅ</span>
+            <span className="top-search-logo-wordmark">Cat World</span>
+          </h1>
 
           <div className="top-search-searchbox">
             <label className="top-search-label" htmlFor="cat-search-input">
