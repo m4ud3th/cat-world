@@ -10,10 +10,13 @@ Interactive 3D globe app built with React, TypeScript, Vite, and Three.js.
 	- real famous cats
 	- fictional cats
 	- cat breeds
-- Category color legend in the header
-- Search bar for cat/breed names
-- Popup info cards with category-specific content templates
+- Hover tooltip showing the cat name when hovering over a marker
+- Category legend buttons in the header — click to open a category list popup
+- Category popup (`CategoryPopup`) listing all entries in a category, with fly-to navigation
+- Search bar for cat/breed names with a "random cat" button
+- Popup info cards with category-specific content templates (`CatInfoPopup`)
 - Marker and search thumbnail images loaded from `public/imgs`
+- Custom favicon (`public/logo-tone-marker-favicon.svg`)
 
 ## Quick Start
 
@@ -34,19 +37,21 @@ npm run preview
 ## Main Files
 
 - `src/App.tsx`
-	- Header/search/legend UI
+	- Header, legend buttons, search bar, random cat button
 	- Search result list
-	- Marker popup mounting
+	- Marker popup and category popup mounting
 - `src/components/Globe.tsx`
-	- Globe scene, rendering, controls, marker interaction
+	- Three.js globe scene, rendering, controls
+	- Marker placement, click handling, hover tooltip
 - `src/components/CatInfoPopup.tsx`
-	- Popup layout and category-specific sections
+	- Popup layout and category-specific info sections
+- `src/components/CategoryPopup.tsx`
+	- Lists all markers in a selected category
+	- Fly-to navigation on item click
 - `src/data/catLocations.ts`
-	- Marker coordinates
-	- Marker images
-	- Popup text content per category
+	- Marker coordinates, images, and popup content per category
 - `src/styles.css`
-	- App, header, legend, search, popup styling
+	- App, header, legend, search, popup, and tooltip styling
 
 ## Marker Data Model
 
@@ -101,7 +106,6 @@ Info fields:
 2. Set coordinates (`latitude`, `longitude`).
 3. Set `category` and fill the matching `info` schema.
 4. Add image file to `public/imgs/` and set `imageUrl`.
-5. Run `npm run build`.
 
 ## Globe Dataset
 
